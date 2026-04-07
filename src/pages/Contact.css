@@ -10,7 +10,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/ITWebSite/sierra4.jpg');
+  background-image: none;
   background-size: cover;
   background-position: center 30%;
   background-color: #1E4A1E;
@@ -275,4 +275,8 @@
 @media (max-width: 560px) {
   .form-row { grid-template-columns: 1fr; }
   .contact-sidebar { grid-template-columns: 1fr; }
+}
+
+.page-hero--contact::before {
+  background-image: url('/ITWebSite/sierra4.jpg');
 }

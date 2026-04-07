@@ -51,7 +51,7 @@ const values = [
 export default function About() {
   return (
     <>
-      <section className="page-hero">
+      <section className="page-hero page-hero--about">
         <div className="container">
           <span className="section-label">About</span>
           <h1>Hi, I'm Tyler.</h1>

@@ -109,7 +109,7 @@ export default function Services() {
   return (
     <>
       {/* Page header */}
-      <section className="page-hero">
+      <section className="page-hero page-hero--services">
         <div className="container">
           <span className="section-label">What I Offer</span>
           <h1>Services &amp; Pricing</h1>
