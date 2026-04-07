@@ -158,7 +158,7 @@ export default function Services() {
                         {svc.pricing.map(({ label, price, note }) => (
                           <div key={label} className="pricing-card">
                             <span className="pricing-card__label">{label}</span>
-                            <span className="pricing-card__price">{price}</span>
+                            <span className="pricing-card__price">TBD</span>
                             <span className="pricing-card__note">{note}</span>
                           </div>
                         ))}
