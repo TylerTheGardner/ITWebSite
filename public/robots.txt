@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /ITWebSite/
+Sitemap: https://tylerthegardner.github.io/ITWebSite/sitemap.xml

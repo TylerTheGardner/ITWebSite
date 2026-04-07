@@ -20,13 +20,27 @@ const cors = require('cors');
 const crypto = require('crypto');
 
 const app = express();
-app.use(express.json());
-app.use(cors({ origin: true, credentials: true }));
+app.use(express.json({ limit: '16kb' }));
+
+// ─── CORS — restrict to known origins ─────────────────────────────────
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173', 'http://localhost:3000'];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST'],
+  maxAge: 86400,
+}));
 
 // ─── Config ────────────────────────────────────────────────────────────
+if (!process.env.OPENCLAW_API_TOKEN) {
+  console.error('FATAL: OPENCLAW_API_TOKEN environment variable is required.');
+  process.exit(1);
+}
 const CFG = {
   gatewayUrl: process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789',
-  apiToken:   process.env.OPENCLAW_API_TOKEN   || '400cdf5eee1ab60c79563908d78df0534ad8bea10a0d4db6',
+  apiToken:   process.env.OPENCLAW_API_TOKEN,
   agentId:    process.env.AGENT_ID              || 'gold-country-it-chat',
   port:       parseInt(process.env.PORT || '3001', 10),
   sessionTTL: parseInt(process.env.SESSION_TTL_MS || '1800000', 10), // 30 min
@@ -65,13 +79,32 @@ setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
 
 // ─── Routes ─────────────────────────────────────────────────────────────
 
+// ─── Simple in-memory rate limiter ────────────────────────────────────
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max requests per window
+
+function checkRateLimit(key) {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(key, { windowStart: now, count: 1 });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= RATE_LIMIT_MAX;
+}
+
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', sessions: sessions.size, agent: CFG.agentId });
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', sessions: sessions.size });
 });
 
 // Create a new chat session
 app.post('/sessions', (req, res) => {
+  if (!checkRateLimit(req.ip)) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
+  }
   const sessionId = createSessionId();
   sessions.set(sessionId, {
     id: sessionId,
@@ -82,29 +115,22 @@ app.post('/sessions', (req, res) => {
   res.json({ sessionId });
 });
 
-// Get session info (no auth needed — sessionId is the key)
-app.get('/sessions/:sessionId', (req, res) => {
-  const session = sessions.get(req.params.sessionId);
-  if (!session) {
-    return res.status(404).json({ error: 'Session not found or expired' });
-  }
-  res.json({
-    sessionId: session.id,
-    messageCount: session.messageCount,
-    lastActive: session.lastActive,
-  });
-});
-
 // Send a message to the agent
 app.post('/chat', async (req, res) => {
   const { sessionId, message } = req.body;
 
-  if (!message || typeof message !== 'string') {
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return res.status(400).json({ error: 'message is required' });
   }
+  if (message.length > 2000) {
+    return res.status(400).json({ error: 'Message too long (max 2000 characters)' });
+  }
 
-  // Resolve or create session
+  // Rate limit per session
   const sid = getOrCreateSession(sessionId);
+  if (!checkRateLimit(`chat:${sid}`)) {
+    return res.status(429).json({ error: 'Too many messages. Please wait a moment.' });
+  }
   const session = sessions.get(sid);
 
   try {
@@ -125,7 +151,7 @@ app.post('/chat', async (req, res) => {
     if (!gatewayRes.ok) {
       const err = await gatewayRes.text();
       console.error('Gateway error:', gatewayRes.status, err);
-      return res.status(502).json({ error: 'Agent unavailable', detail: err });
+      return res.status(502).json({ error: 'Agent unavailable' });
     }
 
     const data = await gatewayRes.json();
@@ -137,14 +163,12 @@ app.post('/chat', async (req, res) => {
     });
   } catch (err) {
     console.error('Chat error:', err);
-    res.status(500).json({ error: 'Failed to reach agent', detail: err.message });
+    res.status(500).json({ error: 'Failed to reach agent' });
   }
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────
 app.listen(CFG.port, () => {
   console.log(`Gold Country IT Chat API running on port ${CFG.port}`);
-  console.log(`Gateway: ${CFG.gatewayUrl}`);
-  console.log(`Agent:   ${CFG.agentId}`);
   console.log(`Session TTL: ${CFG.sessionTTL / 1000 / 60} min`);
 });

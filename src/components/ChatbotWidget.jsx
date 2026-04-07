@@ -48,7 +48,7 @@ export default function ChatbotWidget() {
     setError(null)
 
     // Append user message immediately
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+    setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userMsg }])
 
     try {
       const res = await fetch(`${API_BASE}/chat`, {
@@ -64,7 +64,7 @@ export default function ChatbotWidget() {
         ? data.reply
         : JSON.stringify(data.reply || data)
 
-      setMessages(prev => [...prev, { role: 'assistant', text: reply }])
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', text: reply }])
     } catch (err) {
       setError('Failed to get a response. Please try again.')
       console.error(err)
@@ -109,8 +109,8 @@ export default function ChatbotWidget() {
               </div>
             )}
 
-            {messages.map((msg, i) => (
-              <div key={i} className={`chatbot-msg chatbot-msg--${msg.role}`}>
+            {messages.map((msg) => (
+              <div key={msg.id} className={`chatbot-msg chatbot-msg--${msg.role}`}>
                 <div className="chatbot-msg__bubble">
                   {msg.text.split('\n').map((line, j) => (
                     <span key={j}>{line}<br/></span>

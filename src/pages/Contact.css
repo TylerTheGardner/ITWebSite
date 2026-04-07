@@ -70,6 +70,17 @@
   resize: vertical;
 }
 
+.form-group input[aria-invalid="true"],
+.form-group textarea[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
+.form-error {
+  font-size: 0.82rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {

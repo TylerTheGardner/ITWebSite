@@ -20,13 +20,31 @@ export default function Contact() {
     message: '',
   })
   const [status, setStatus] = useState(null) // null | 'sending' | 'success' | 'error'
+  const [errors, setErrors] = useState({})
 
   const handleChange = e => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: null }))
+    }
+  }
+
+  const validate = () => {
+    const errs = {}
+    if (!form.name.trim()) errs.name = 'Name is required'
+    if (!form.email.trim()) errs.email = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email'
+    if (!form.message.trim()) errs.message = 'Please describe what you need help with'
+    return errs
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      return
+    }
     setStatus('sending')
 
     // Using mailto fallback until a form backend is configured.
@@ -76,7 +94,7 @@ export default function Contact() {
                 </button>
               </div>
             ) : (
-              <form className="contact-form" onSubmit={handleSubmit} noValidate>
+              <form className="contact-form" onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">Full Name *</label>
@@ -88,7 +106,9 @@ export default function Contact() {
                       onChange={handleChange}
                       placeholder="Jane Smith"
                       required
+                      aria-invalid={!!errors.name}
                     />
+                    {errors.name && <span className="form-error" role="alert">{errors.name}</span>}
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Email Address *</label>
@@ -100,7 +120,9 @@ export default function Contact() {
                       onChange={handleChange}
                       placeholder="jane@example.com"
                       required
+                      aria-invalid={!!errors.email}
                     />
+                    {errors.email && <span className="form-error" role="alert">{errors.email}</span>}
                   </div>
                 </div>
 
@@ -142,7 +164,9 @@ export default function Contact() {
                     onChange={handleChange}
                     placeholder="Describe your situation, question, or project idea…"
                     required
+                    aria-invalid={!!errors.message}
                   />
+                  {errors.message && <span className="form-error" role="alert">{errors.message}</span>}
                 </div>
 
                 <button

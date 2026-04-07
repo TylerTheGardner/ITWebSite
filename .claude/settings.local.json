@@ -11,7 +11,9 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(git commit:*)",
+      "Bash(grep -B2 -A1 \"rgba\\(255,255,255,0\\\\.[1-4]\\)\" /c/Users/Tyler/Documents/GitHub/ITWebSite/src/*.css /c/Users/Tyler/Documents/GitHub/ITWebSite/src/components/*.css /c/Users/Tyler/Documents/GitHub/ITWebSite/src/pages/*.css)"
     ]
   }
 }
