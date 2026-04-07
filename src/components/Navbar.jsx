@@ -23,10 +23,7 @@ export default function Navbar() {
     <header className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <div className="container navbar__inner">
         <Link to="/" className="navbar__logo" onClick={() => setMenuOpen(false)}>
-          <span className="navbar__logo-icon" aria-hidden="true">⛰️</span>
-          <span className="navbar__logo-text">
-            Gold Country <strong>IT</strong>
-          </span>
+          <img src="/ITWebSite/logo.png" alt="Gold Country IT" className="navbar__logo-img" />
         </Link>
 
         <nav className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>

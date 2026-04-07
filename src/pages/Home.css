@@ -11,7 +11,7 @@
 .hero__bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1C2B1A 0%, #2D4A28 45%, #3A6B35 100%);
+  background: linear-gradient(135deg, #122012 0%, #1E4A1E 55%, #2A6A2A 100%);
   z-index: 0;
 }
 .hero__bg::after {
@@ -168,7 +168,7 @@
 
 /* CTA banner */
 .cta-banner {
-  background: linear-gradient(135deg, #1C2B1A 0%, #2D4A28 100%);
+  background: linear-gradient(135deg, #122012 0%, #1E4A1E 100%);
   padding: 3.5rem 0;
 }
 .cta-banner__inner {

@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="container footer__inner">
         <div className="footer__brand">
           <Link to="/" className="footer__logo">
-            <span aria-hidden="true">⛰️</span> Gold Country <strong>IT</strong>
+            <img src="/ITWebSite/logo.png" alt="Gold Country IT" className="footer__logo-img" />
           </Link>
           <p className="footer__tagline">
             Local tech expertise. Real solutions.<br />
