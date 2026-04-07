@@ -1,50 +1,156 @@
 /**
- * ChatbotWidget — placeholder for OpenClaw AI agent integration.
- *
- * To embed the chatbot, replace the contents of this component with
- * the embed code or SDK initialization provided by your agent platform.
- *
- * Common integration patterns:
- *   1. Script-tag embed: add the <script> tag in index.html and trigger
- *      the widget via a global method (e.g., window.OpenClaw.open()).
- *   2. React SDK: import and render the provider/widget component here.
- *   3. iframe embed: render an <iframe> pointing to your agent's hosted URL.
- *
- * The floating button below is a stub — wire it up once the SDK is ready.
+ * ChatbotWidget — Gold Country IT
+ * Connects to the local API server which proxies to OpenClaw.
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './ChatbotWidget.css'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 export default function ChatbotWidget() {
   const [open, setOpen] = useState(false)
+  const [sessionId, setSessionId] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const bottomRef = useRef(null)
+  const inputRef = useRef(null)
 
-  // TODO: replace stub panel with real agent embed
+  // Create a session on first open
+  useEffect(() => {
+    if (open && !sessionId) {
+      fetch(`${API_BASE}/sessions`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => setSessionId(data.sessionId))
+        .catch(() => setError('Could not connect to chat server.'))
+    }
+  }, [open, sessionId])
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Focus input when panel opens
+  useEffect(() => {
+    if (open) inputRef.current?.focus()
+  }, [open])
+
+  const sendMessage = async (e) => {
+    e?.preventDefault()
+    if (!input.trim() || loading) return
+
+    const userMsg = input.trim()
+    setInput('')
+    setLoading(true)
+    setError(null)
+
+    // Append user message immediately
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, message: userMsg }),
+      })
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`)
+
+      const data = await res.json()
+      const reply = typeof data.reply === 'string'
+        ? data.reply
+        : JSON.stringify(data.reply || data)
+
+      setMessages(prev => [...prev, { role: 'assistant', text: reply }])
+    } catch (err) {
+      setError('Failed to get a response. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  }
+
   return (
     <>
+      {/* Floating trigger button */}
       <button
         className="chatbot-trigger"
         onClick={() => setOpen(o => !o)}
-        aria-label="Chat with us"
-        title="Chat with us"
+        aria-label={open ? 'Close chat' : 'Chat with us'}
+        title={open ? 'Close chat' : 'Chat with us'}
       >
         {open ? '✕' : '💬'}
       </button>
 
+      {/* Chat panel */}
       {open && (
-        <div className="chatbot-panel" role="dialog" aria-label="Chat">
+        <div className="chatbot-panel" role="dialog" aria-label="Gold Country IT Assistant">
           <div className="chatbot-panel__header">
             <span>💬 Gold Country IT Assistant</span>
             <button onClick={() => setOpen(false)} aria-label="Close chat">✕</button>
           </div>
-          <div className="chatbot-panel__body">
-            <p>AI assistant coming soon!</p>
-            <p>
-              In the meantime, reach us at{' '}
-              <a href="mailto:tylerthegardner@gmail.com">tylerthegardner@gmail.com</a>{' '}
-              or <a href="tel:+13036537381">(303) 653-7381</a>.
-            </p>
+
+          <div className="chatbot-panel__messages">
+            {messages.length === 0 && !loading && (
+              <div className="chatbot-welcome">
+                <p>👋 Hey there! I'm the Gold Country IT assistant.</p>
+                <p>Ask me anything about our services, pricing, or how we can help your business.</p>
+                <p className="chatbot-welcome__hint">Typical response time: a few seconds</p>
+              </div>
+            )}
+
+            {messages.map((msg, i) => (
+              <div key={i} className={`chatbot-msg chatbot-msg--${msg.role}`}>
+                <div className="chatbot-msg__bubble">
+                  {msg.text.split('\n').map((line, j) => (
+                    <span key={j}>{line}<br/></span>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="chatbot-msg chatbot-msg--assistant">
+                <div className="chatbot-msg__bubble chatbot-msg__bubble--typing">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="chatbot-error">{error}</div>
+            )}
+
+            <div ref={bottomRef} />
           </div>
+
+          <form className="chatbot-panel__input" onSubmit={sendMessage}>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Ask me anything…"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+              maxLength={500}
+            />
+            <button type="submit" disabled={!input.trim() || loading} aria-label="Send">
+              ➤
+            </button>
+          </form>
         </div>
       )}
     </>

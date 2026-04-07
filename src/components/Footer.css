@@ -17,12 +17,13 @@
   text-decoration: none;
   margin-bottom: 0.75rem;
 }
-.footer__logo:hover { text-decoration: none; opacity: 0.85; }
+.footer__logo:hover { text-decoration: none; opacity: 0.9; }
 .footer__logo-img {
-  height: 56px;
+  height: 64px;
   width: auto;
-  /* Invert to white since footer background is dark green */
-  filter: brightness(0) invert(1);
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 6px 10px;
 }
 
 .footer__tagline {
