@@ -1,0 +1,6 @@
+/* App-level layout */
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
