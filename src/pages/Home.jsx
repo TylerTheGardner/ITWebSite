@@ -84,7 +84,7 @@ export default function Home() {
             <span className="section-label">How I Can Help</span>
             <h2 className="section-title">What I do</h2>
             <p className="section-sub">
-              From everyday tech fixes to custom software for your business —
+              From everyday tech fixes to custom software for your business,
               all in one place, from someone who actually picks up the phone.
             </p>
           </div>
