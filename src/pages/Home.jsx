@@ -60,7 +60,12 @@ export default function Home() {
       <section className="hero">
         <div className="hero__bg" aria-hidden="true" />
         <div className="container hero__content">
-          <span className="section-label">Cool, CA &amp; Auburn Lake Trails</span>
+          <span className="section-label" style={{display:'inline-flex', alignItems:'center', gap:'0.3rem'}}>
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 0C3.24 0 1 2.18 1 4.87 1 8.52 6 14 6 14s5-5.48 5-9.13C11 2.18 8.76 0 6 0Zm0 6.61a1.75 1.75 0 1 1 0-3.5 1.75 1.75 0 0 1 0 3.5Z" fill="currentColor"/>
+            </svg>
+            Cool, CA
+          </span>
           <h1 className="hero__title">
             Tech help from<br />
             <span className="hero__title-accent">your neighbor.</span>
