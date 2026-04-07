@@ -51,7 +51,9 @@
       "Bash(sed -i '/^\\\\.page-hero--services::before {/{N;N;N;d}' /c/Users/Tyler/Documents/GitHub/ITWebSite/src/pages/Services.css)",
       "Bash(sed -i '/^\\\\.page-hero--about::before {/{N;N;N;d}' /c/Users/Tyler/Documents/GitHub/ITWebSite/src/pages/About.css)",
       "Bash(sed -i '/^\\\\.page-hero--contact::before {/{N;N;N;d}' /c/Users/Tyler/Documents/GitHub/ITWebSite/src/pages/Contact.css)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
