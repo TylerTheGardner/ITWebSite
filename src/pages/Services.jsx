@@ -17,9 +17,9 @@ const services = [
       'Data backup & recovery',
     ],
     pricing: [
-      { label: 'Remote Session', price: '$75', note: 'per hour' },
-      { label: 'On-Site Visit', price: '$99', note: 'first hour, $75/hr after' },
-      { label: 'Monthly Support Plan', price: '$149', note: '/month — 2 hrs included' },
+      { label: 'Remote Session', price: '$50', note: 'per hour' },
+      { label: 'On-Site Visit', price: '$65', note: 'first hour, $50/hr after' },
+      { label: 'Monthly Support Plan', price: '$99', note: '/month — 2 hrs included' },
     ],
     tag: 'Most Popular',
   },
@@ -37,9 +37,9 @@ const services = [
       'Follow-up Q&A session included',
     ],
     pricing: [
-      { label: 'Home / Individual', price: '$149', note: 'one-time' },
-      { label: 'Small Business (up to 10 devices)', price: '$299', note: 'one-time' },
-      { label: 'Comprehensive Business Audit', price: '$499', note: 'up to 25 devices' },
+      { label: 'Home / Individual', price: '$99', note: 'one-time' },
+      { label: 'Small Business (up to 10 devices)', price: '$199', note: 'one-time' },
+      { label: 'Comprehensive Business Audit', price: '$329', note: 'up to 25 devices' },
     ],
   },
   {
@@ -56,9 +56,9 @@ const services = [
       'Ongoing monitoring option available',
     ],
     pricing: [
-      { label: 'One-Time Setup', price: '$129', note: 'per device/account' },
-      { label: 'Home Protection Package', price: '$199', note: 'up to 5 devices' },
-      { label: 'Business Package', price: '$79', note: '/month, up to 10 users' },
+      { label: 'One-Time Setup', price: '$85', note: 'per device/account' },
+      { label: 'Home Protection Package', price: '$129', note: 'up to 5 devices' },
+      { label: 'Business Package', price: '$49', note: '/month, up to 10 users' },
     ],
   },
   {
