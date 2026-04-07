@@ -4,52 +4,47 @@ import './About.css'
 
 const timeline = [
   {
+    year: 'Early career',
+    title: 'Learning the craft',
+    desc: 'Started in IT support and software development, working my way through increasingly complex projects and learning what actually makes technology work for people — not just on paper.',
+  },
+  {
     year: '2019',
-    title: 'SAP Hackathon Winner',
-    desc: 'Won a competitive SAP Hackbot challenge against teams from across the industry — demonstrating rapid problem-solving and deep technical chops.',
+    title: 'SAP Hackathon — first place',
+    desc: 'Competed in a national SAP development challenge and took first. Mostly just a fun reminder that working fast under pressure is a skill you either have or you build.',
   },
   {
-    year: 'Enterprise',
-    title: 'Cintas Corporation',
-    desc: 'Delivered IT consulting for one of North America\'s largest uniform and workplace supply companies, supporting complex enterprise infrastructure.',
+    year: 'Over 8 years',
+    title: 'Enterprise consulting',
+    desc: 'Worked with a range of companies — including Cintas, the San Francisco 49ers, and Gates Corporation — on software development and IT projects. Good experience, interesting problems, and a lot of lessons about what businesses actually need from their technology.',
   },
   {
-    year: 'Enterprise',
-    title: 'San Francisco 49ers',
-    desc: 'Provided technology consulting for the NFL franchise, working on systems used by one of the most recognized sports organizations in the world.',
-  },
-  {
-    year: 'Enterprise',
-    title: 'Gates Corporation',
-    desc: 'Supported IT initiatives at Gates, a global leader in power transmission and fluid power solutions.',
-  },
-  {
-    year: 'Today',
-    title: 'Gold Country IT — Serving My Community',
-    desc: 'After 8+ years in enterprise IT and development, I\'m putting those skills to work for the people and businesses of Cool, CA and the Auburn Lake Trails community.',
+    year: 'Now',
+    title: 'Moved to Auburn Lake Trails, started Gold Country IT',
+    desc: 'After years of working with big organizations, I wanted to do work that felt closer to home — literally. Good tech help is hard to find out here, and that felt like a problem worth solving.',
   },
 ]
 
 const values = [
   {
     icon: '🤝',
-    title: 'No Jargon, No Runaround',
-    desc: 'I explain things in plain English and tell you exactly what\'s going on with your technology.',
+    title: 'Straight talk',
+    desc: 'I\'ll tell you what\'s actually wrong and what it actually costs to fix. No inflated quotes, no unnecessary upsells.',
   },
   {
     icon: '📍',
-    title: 'Truly Local',
-    desc: 'I live here in Auburn Lake Trails. When you need someone, I\'m not a call center — I\'m your neighbor.',
+    title: 'Your neighbor',
+    desc: 'I live in Auburn Lake Trails. I\'m not a franchise or a call center — I\'m someone you might run into at the hardware store.',
   },
   {
     icon: '🎯',
-    title: 'Right-Sized Solutions',
-    desc: 'I won\'t oversell you. You get exactly what your situation calls for — not a package designed to inflate a bill.',
+    title: 'Right-sized help',
+    desc: 'A $50 fix doesn\'t need a $500 solution. I\'ll tell you when something is simple and when it isn\'t.',
   },
   {
     icon: '🔮',
-    title: 'Forward-Thinking',
-    desc: 'AI is changing everything fast. I stay current so I can give you honest, practical advice on what\'s worth adopting.',
+    title: 'Keeping up with AI',
+    desc: 'The tech landscape is changing fast. I stay current so I can give you honest, practical advice — not hype.',
   },
 ]
 
@@ -58,10 +53,11 @@ export default function About() {
     <>
       <section className="page-hero">
         <div className="container">
-          <span className="section-label">About Gold Country IT</span>
-          <h1>Your Neighbor. Your Tech Expert.</h1>
+          <span className="section-label">About</span>
+          <h1>Hi, I'm Tyler.</h1>
           <p className="page-hero__sub">
-            8 years of enterprise IT experience, now working for the community I call home.
+            I live in Auburn Lake Trails and I started Gold Country IT because
+            finding good local tech help shouldn't be this hard.
           </p>
         </div>
       </section>
@@ -73,28 +69,28 @@ export default function About() {
             <div className="about-bio__avatar-placeholder">TG</div>
           </div>
           <div className="about-bio__text">
-            <span className="section-label">Meet Tyler</span>
-            <h2>Tyler — Founder & Lead Consultant</h2>
+            <span className="section-label">A bit about me</span>
+            <h2>Tyler — Gold Country IT</h2>
             <p>
-              I'm a software developer and IT consultant living in the Auburn Lake Trails
-              community in Cool, CA. After spending 8+ years working with major corporations
-              across the US, I started Gold Country IT to bring that same level of expertise
-              to my own backyard.
+              I'm a software developer and IT consultant. I've been doing this
+              professionally for over 8 years, working on everything from small
+              business websites to large-scale enterprise software. I've learned
+              a lot along the way — mostly about what people actually need from
+              their technology versus what they get sold.
             </p>
             <p>
-              My background spans everything from enterprise infrastructure and custom software
-              development to cutting-edge AI tooling. I've competed in — and won — national
-              hackathons, and I've helped companies like Cintas, the San Francisco 49ers, and
-              Gates Corporation solve real technology problems.
+              I moved to Auburn Lake Trails because I wanted to be somewhere
+              quieter and more connected. Starting Gold Country IT was a natural
+              fit — there's real demand for this kind of help out here, and I'd
+              rather be useful to my neighbors than commute to an office.
             </p>
             <p>
-              What drives me now is simpler: the people in this community deserve the same
-              quality of tech support and advice that big companies pay a lot of money for. No
-              condescension, no upselling — just honest, skilled help from someone who
-              genuinely cares about this area.
+              If you've got a tech problem — big or small — feel free to reach
+              out. I'm pretty easy to talk to, and the first conversation is
+              always free.
             </p>
             <div className="about-bio__actions">
-              <Link to="/contact" className="btn btn-primary">Work With Me</Link>
+              <Link to="/contact" className="btn btn-primary">Get in Touch</Link>
               <Link to="/services" className="btn btn-outline">View Services</Link>
             </div>
           </div>
@@ -105,8 +101,8 @@ export default function About() {
       <section className="section section-alt">
         <div className="container">
           <div className="section-header">
-            <span className="section-label">Experience</span>
-            <h2 className="section-title">A Track Record That Speaks for Itself</h2>
+            <span className="section-label">Background</span>
+            <h2 className="section-title">Where I'm coming from</h2>
           </div>
           <div className="timeline">
             {timeline.map(({ year, title, desc }) => (
@@ -127,8 +123,8 @@ export default function About() {
       <section className="section">
         <div className="container">
           <div className="section-header center">
-            <span className="section-label">How I Work</span>
-            <h2 className="section-title">What You Can Expect</h2>
+            <span className="section-label">How I work</span>
+            <h2 className="section-title">What to expect</h2>
           </div>
           <div className="grid-2">
             {values.map(({ icon, title, desc }) => (
@@ -145,9 +141,9 @@ export default function About() {
       {/* CTA */}
       <section className="section cta-banner-about">
         <div className="container cta-banner-about__inner">
-          <h2>Let's talk about what you need.</h2>
-          <p>Free 30-minute consultation. No pressure, no commitment.</p>
-          <Link to="/contact" className="btn btn-primary">Schedule a Consultation</Link>
+          <h2>Let's figure out what you need.</h2>
+          <p>Free 30-minute conversation. No pressure, no commitment.</p>
+          <Link to="/contact" className="btn btn-primary">Get in Touch</Link>
         </div>
       </section>
 

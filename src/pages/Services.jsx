@@ -27,7 +27,7 @@ const services = [
     id: 'security',
     icon: '🔒',
     title: 'Security Audit',
-    desc: 'Most small businesses and homes have security gaps they don\'t know about until it\'s too late. I\'ll review your network, devices, accounts, and software — then give you a clear action plan to close those gaps before someone exploits them.',
+    desc: 'Most small businesses and homes have security gaps they don\'t know about until it\'s too late. I\'ll review your network, devices, accounts, and software — then give you a clear, plain-English action plan to close those gaps.',
     features: [
       'Home network vulnerability scan',
       'Password & account security review',
@@ -46,7 +46,7 @@ const services = [
     id: 'scam',
     icon: '🚫',
     title: 'Spam & Scam Prevention',
-    desc: 'Scam calls, phishing emails, and spam texts are a growing problem — especially for seniors and small businesses. I\'ll set up filters, blockers, and smart habits to dramatically reduce the noise and protect you from costly mistakes.',
+    desc: 'Scam calls, phishing emails, and spam texts are a growing problem — especially for seniors and small businesses. I\'ll set up the right filters and blockers, and walk you through the habits that actually make a difference.',
     features: [
       'Email spam filter setup & tuning',
       'Phone scam call blocking',
@@ -65,7 +65,7 @@ const services = [
     id: 'software',
     icon: '💻',
     title: 'Custom Software Development',
-    desc: 'Off-the-shelf software never quite fits. I build custom websites, booking systems, inventory tools, customer portals, and automation scripts tailored exactly to how your business works — not the other way around.',
+    desc: 'Generic software forces your business to adapt to it. I build the other way around — websites, booking systems, customer portals, and automation tools designed around exactly how you operate. With 8 years of professional development experience and a background delivering software for enterprise clients including Cintas and Gates Corporation, I bring the same quality of work to businesses of any size.',
     features: [
       'Business websites & landing pages',
       'Online booking & scheduling systems',
@@ -75,13 +75,18 @@ const services = [
       'Ongoing maintenance & support',
     ],
     pricing: null,
-    ctaNote: 'Every project is unique. Contact me for a free scoping conversation and quote.',
+    ctaNote: 'Every project is scoped individually. Reach out for a free consultation — I\'ll give you an honest assessment and a clear quote before any work begins.',
+    credentials: [
+      { label: 'Experience', value: '8+ years professional development' },
+      { label: 'Clients', value: 'Cintas · Gates Corporation · SF 49ers' },
+      { label: 'Approach', value: 'Fixed-scope quotes, no surprise costs' },
+    ],
   },
   {
     id: 'ai',
     icon: '🤖',
     title: 'AI Integration & Consulting',
-    desc: 'AI tools are transforming how businesses operate — but knowing which ones to use and how to implement them is the hard part. With deep expertise in AI platforms and tools, I help local businesses identify real opportunities and put them into practice.',
+    desc: 'AI is moving fast, and most businesses don\'t have time to figure out what\'s actually worth adopting. I do. I work hands-on with AI tools daily — building agents, automating workflows, and integrating AI into real business systems. I\'ll help you cut through the noise, identify genuine opportunities, and implement solutions that actually work.',
     features: [
       'AI readiness assessment',
       'Tool selection & vendor evaluation',
@@ -91,7 +96,12 @@ const services = [
       'Custom AI agent development',
     ],
     pricing: null,
-    ctaNote: 'AI solutions are scoped to your specific needs. Let\'s talk about what\'s possible for your business.',
+    ctaNote: 'AI projects vary widely in scope. Let\'s start with a conversation about your business and what\'s realistic — no jargon, no hype.',
+    credentials: [
+      { label: 'Expertise', value: 'Hands-on AI development & agent building' },
+      { label: 'Focus', value: 'Practical tools, not buzzwords' },
+      { label: 'Background', value: 'Enterprise consulting + modern AI tooling' },
+    ],
   },
 ]
 
@@ -101,11 +111,11 @@ export default function Services() {
       {/* Page header */}
       <section className="page-hero">
         <div className="container">
-          <span className="section-label">What We Offer</span>
+          <span className="section-label">What I Offer</span>
           <h1>Services &amp; Pricing</h1>
           <p className="page-hero__sub">
-            Transparent pricing on the services that fit a fixed scope.
-            Custom projects are quoted after a free consultation.
+            Straightforward pricing where the scope is fixed.
+            Custom projects start with a free conversation.
           </p>
         </div>
       </section>
@@ -156,11 +166,20 @@ export default function Services() {
                     </>
                   ) : (
                     <div className="pricing-quote">
-                      <span className="pricing-quote__icon">💬</span>
+                      {svc.credentials && (
+                        <div className="svc-credentials">
+                          {svc.credentials.map(({ label, value }) => (
+                            <div key={label} className="svc-credential-item">
+                              <span className="svc-credential-item__label">{label}</span>
+                              <span className="svc-credential-item__value">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <h4>Custom Quote</h4>
                       <p>{svc.ctaNote}</p>
                       <Link to="/contact" className="btn btn-outline">
-                        Get a Free Quote
+                        Start a Conversation
                       </Link>
                     </div>
                   )}
@@ -174,13 +193,13 @@ export default function Services() {
       {/* Bottom CTA */}
       <section className="section cta-banner-services">
         <div className="container cta-banner-services__inner">
-          <h2>Not sure which service you need?</h2>
+          <h2>Not sure what you need?</h2>
           <p>
-            Just reach out. A free 30-minute consultation will help us figure out
-            exactly what will make the biggest difference for you.
+            That's fine — just reach out. A free 30-minute conversation is usually
+            enough to figure out the best path forward.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link to="/contact" className="btn btn-primary">Book a Free Consultation</Link>
+            <Link to="/contact" className="btn btn-primary">Get in Touch</Link>
             <a href="tel:+13036537381" className="btn btn-outline">(303) 653-7381</a>
           </div>
         </div>

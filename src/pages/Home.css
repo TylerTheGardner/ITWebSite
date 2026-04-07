@@ -139,6 +139,21 @@
   margin-top: 0.5rem;
 }
 
+/* Local reasons */
+.local-reason-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.local-reason-card__icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+.local-reason-card p {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
 /* Clients */
 .clients-row {
   display: flex;
