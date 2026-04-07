@@ -6,7 +6,7 @@ const services = [
   {
     icon: '🖥️',
     title: 'IT Support',
-    desc: 'Computer acting up? Wi-Fi cutting out? I come to you — or connect remotely — and sort it out in plain English.',
+    desc: 'Computer acting up? Wi-Fi cutting out? I come to you or connect remotely and sort it out in plain English.',
     link: '/services#it-support',
   },
   {
@@ -39,7 +39,7 @@ const localReasons = [
   {
     icon: '📍',
     title: 'Actually local',
-    desc: 'I live in Auburn Lake Trails. When you call, you\'re calling a neighbor — not a call center.',
+    desc: 'I live in Auburn Lake Trails. When you call, you\'re calling a neighbor, not a call center.',
   },
   {
     icon: '🗣️',
@@ -68,7 +68,7 @@ export default function Home() {
           <p className="hero__sub">
             I'm Tyler, and I live right here in Auburn Lake Trails. Whether your
             computer's slow, your Wi-Fi's unreliable, or you need a website built
-            for your business — I can help.
+            for your business, I can help.
           </p>
           <div className="hero__actions">
             <Link to="/contact" className="btn btn-primary">Get in Touch</Link>
@@ -109,7 +109,7 @@ export default function Home() {
             <h2 className="section-title">Tech help that actually feels helpful</h2>
             <p className="section-sub">
               I started this business because good, honest tech support is hard to find
-              out here — and it shouldn't be.
+              out here, and it shouldn't be.
             </p>
           </div>
           <div className="grid-3">

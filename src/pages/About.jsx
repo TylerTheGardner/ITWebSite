@@ -6,22 +6,22 @@ const timeline = [
   {
     year: 'Early career',
     title: 'Learning the craft',
-    desc: 'Started in IT support and software development, working my way through increasingly complex projects and learning what actually makes technology work for people — not just on paper.',
+    desc: 'Started in IT support and software development, working my way through increasingly complex projects and learning what actually makes technology work for people, not just on paper.',
   },
   {
     year: '2019',
-    title: 'SAP Hackathon — first place',
+    title: 'SAP Hackathon, first place',
     desc: 'Competed in a national SAP development challenge and took first. Mostly just a fun reminder that working fast under pressure is a skill you either have or you build.',
   },
   {
     year: 'Over 8 years',
     title: 'Enterprise consulting',
-    desc: 'Worked with a range of companies — including Cintas, the San Francisco 49ers, and Gates Corporation — on software development and IT projects. Good experience, interesting problems, and a lot of lessons about what businesses actually need from their technology.',
+    desc: 'Worked with companies like Cintas, the San Francisco 49ers, and Gates Corporation on software development and IT projects. Good experience, interesting problems, and a lot of lessons about what businesses actually need from their technology.',
   },
   {
     year: 'Now',
     title: 'Moved to Auburn Lake Trails, started Gold Country IT',
-    desc: 'After years of working with big organizations, I wanted to do work that felt closer to home — literally. Good tech help is hard to find out here, and that felt like a problem worth solving.',
+    desc: 'After years of working with big organizations, I wanted to do work that felt closer to home. Literally. Good tech help is hard to find out here, and that felt like a problem worth solving.',
   },
 ]
 
@@ -34,7 +34,7 @@ const values = [
   {
     icon: '📍',
     title: 'Your neighbor',
-    desc: 'I live in Auburn Lake Trails. I\'m not a franchise or a call center — I\'m someone you might run into at the hardware store.',
+    desc: 'I live in Auburn Lake Trails. I\'m not a franchise or a call center. I\'m someone you might run into at the hardware store.',
   },
   {
     icon: '🎯',
@@ -44,7 +44,7 @@ const values = [
   {
     icon: '🔮',
     title: 'Keeping up with AI',
-    desc: 'The tech landscape is changing fast. I stay current so I can give you honest, practical advice — not hype.',
+    desc: 'The tech landscape is changing fast. I stay current so I can give you honest, practical advice instead of hype.',
   },
 ]
 
@@ -70,22 +70,22 @@ export default function About() {
           </div>
           <div className="about-bio__text">
             <span className="section-label">A bit about me</span>
-            <h2>Tyler — Gold Country IT</h2>
+            <h2>Tyler, Gold Country IT</h2>
             <p>
               I'm a software developer and IT consultant. I've been doing this
               professionally for over 8 years, working on everything from small
               business websites to large-scale enterprise software. I've learned
-              a lot along the way — mostly about what people actually need from
+              a lot along the way, mostly about what people actually need from
               their technology versus what they get sold.
             </p>
             <p>
               I moved to Auburn Lake Trails because I wanted to be somewhere
               quieter and more connected. Starting Gold Country IT was a natural
-              fit — there's real demand for this kind of help out here, and I'd
+              fit. There's real demand for this kind of help out here, and I'd
               rather be useful to my neighbors than commute to an office.
             </p>
             <p>
-              If you've got a tech problem — big or small — feel free to reach
+              If you've got a tech problem, big or small, feel free to reach
               out. I'm pretty easy to talk to, and the first conversation is
               always free.
             </p>

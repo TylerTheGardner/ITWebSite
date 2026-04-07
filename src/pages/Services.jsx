@@ -7,7 +7,7 @@ const services = [
     id: 'it-support',
     icon: '🖥️',
     title: 'IT Support & Troubleshooting',
-    desc: 'Is your computer slow, your printer refusing to print, or your Wi-Fi dropping constantly? I come to you — or connect remotely — and get things working again fast. No confusing tech-speak, just real help from a real person.',
+    desc: 'Is your computer slow, your printer refusing to print, or your Wi-Fi dropping constantly? I come to you or connect remotely and get things working again fast. No confusing tech-speak, just real help from a real person.',
     features: [
       'Remote & on-site support',
       'PC, Mac, tablet & phone help',
@@ -19,7 +19,7 @@ const services = [
     pricing: [
       { label: 'Remote Session', price: '$50', note: 'per hour' },
       { label: 'On-Site Visit', price: '$65', note: 'first hour, $50/hr after' },
-      { label: 'Monthly Support Plan', price: '$99', note: '/month — 2 hrs included' },
+      { label: 'Monthly Support Plan', price: '$99', note: '/month, 2 hrs included' },
     ],
     tag: 'Most Popular',
   },
@@ -27,7 +27,7 @@ const services = [
     id: 'security',
     icon: '🔒',
     title: 'Security Audit',
-    desc: 'Most small businesses and homes have security gaps they don\'t know about until it\'s too late. I\'ll review your network, devices, accounts, and software — then give you a clear, plain-English action plan to close those gaps.',
+    desc: 'Most small businesses and homes have security gaps they don\'t know about until it\'s too late. I\'ll review your network, devices, accounts, and software, then give you a clear, plain-English action plan to close those gaps.',
     features: [
       'Home network vulnerability scan',
       'Password & account security review',
@@ -46,7 +46,7 @@ const services = [
     id: 'scam',
     icon: '🚫',
     title: 'Spam & Scam Prevention',
-    desc: 'Scam calls, phishing emails, and spam texts are a growing problem — especially for seniors and small businesses. I\'ll set up the right filters and blockers, and walk you through the habits that actually make a difference.',
+    desc: 'Scam calls, phishing emails, and spam texts are a growing problem, especially for seniors and small businesses. I\'ll set up the right filters and blockers, and walk you through the habits that actually make a difference.',
     features: [
       'Email spam filter setup & tuning',
       'Phone scam call blocking',
@@ -65,7 +65,7 @@ const services = [
     id: 'software',
     icon: '💻',
     title: 'Custom Software Development',
-    desc: 'Generic software forces your business to adapt to it. I build the other way around — websites, booking systems, customer portals, and automation tools designed around exactly how you operate. With 8 years of professional development experience and a background delivering software for enterprise clients including Cintas and Gates Corporation, I bring the same quality of work to businesses of any size.',
+    desc: 'Generic software forces your business to adapt to it. I build the other way around: websites, booking systems, customer portals, and automation tools designed around exactly how you operate. With 8 years of professional development experience and a background delivering software for enterprise clients including Cintas and Gates Corporation, I bring the same quality of work to businesses of any size.',
     features: [
       'Business websites & landing pages',
       'Online booking & scheduling systems',
@@ -75,7 +75,7 @@ const services = [
       'Ongoing maintenance & support',
     ],
     pricing: null,
-    ctaNote: 'Every project is scoped individually. Reach out for a free consultation — I\'ll give you an honest assessment and a clear quote before any work begins.',
+    ctaNote: 'Every project is scoped individually. Reach out for a free consultation. I\'ll give you an honest assessment and a clear quote before any work begins.',
     credentials: [
       { label: 'Experience', value: '8+ years professional development' },
       { label: 'Clients', value: 'Cintas · Gates Corporation · SF 49ers' },
@@ -86,7 +86,7 @@ const services = [
     id: 'ai',
     icon: '🤖',
     title: 'AI Integration & Consulting',
-    desc: 'AI is moving fast, and most businesses don\'t have time to figure out what\'s actually worth adopting. I do. I work hands-on with AI tools daily — building agents, automating workflows, and integrating AI into real business systems. I\'ll help you cut through the noise, identify genuine opportunities, and implement solutions that actually work.',
+    desc: 'AI is moving fast, and most businesses don\'t have time to figure out what\'s actually worth adopting. I do. I work hands-on with AI tools daily, building agents, automating workflows, and integrating AI into real business systems. I\'ll help you cut through the noise, identify genuine opportunities, and implement solutions that actually work.',
     features: [
       'AI readiness assessment',
       'Tool selection & vendor evaluation',
@@ -96,7 +96,7 @@ const services = [
       'Custom AI agent development',
     ],
     pricing: null,
-    ctaNote: 'AI projects vary widely in scope. Let\'s start with a conversation about your business and what\'s realistic — no jargon, no hype.',
+    ctaNote: 'AI projects vary widely in scope. Let\'s start with a conversation about your business and what\'s realistic. No jargon, no hype.',
     credentials: [
       { label: 'Expertise', value: 'Hands-on AI development & agent building' },
       { label: 'Focus', value: 'Practical tools, not buzzwords' },
@@ -195,7 +195,7 @@ export default function Services() {
         <div className="container cta-banner-services__inner">
           <h2>Not sure what you need?</h2>
           <p>
-            That's fine — just reach out. A free 30-minute conversation is usually
+            That's fine. Just reach out. A free 30-minute conversation is usually
             enough to figure out the best path forward.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>

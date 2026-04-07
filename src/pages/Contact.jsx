@@ -8,7 +8,7 @@ const serviceOptions = [
   'Spam & Scam Prevention',
   'Custom Software Development',
   'AI Integration & Consulting',
-  'Not sure — help me figure it out',
+  'Not sure yet, help me figure it out',
 ]
 
 export default function Contact() {
@@ -50,7 +50,7 @@ export default function Contact() {
     // Using mailto fallback until a form backend is configured.
     // To wire up a real backend, replace this block with a fetch() to
     // your preferred service (Formspree, EmailJS, a serverless function, etc.)
-    const subject = encodeURIComponent(`Gold Country IT Inquiry — ${form.service || 'General'}`)
+    const subject = encodeURIComponent(`Gold Country IT Inquiry - ${form.service || 'General'}`)
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nService: ${form.service}\n\nMessage:\n${form.message}`
     )
@@ -65,7 +65,7 @@ export default function Contact() {
           <span className="section-label">Let's Talk</span>
           <h1>Get in Touch</h1>
           <p className="page-hero__sub">
-            Free 30-minute consultation — remote or in person, no obligation.
+            Free 30-minute consultation, remote or in person, no obligation.
           </p>
         </div>
       </section>
@@ -205,7 +205,7 @@ export default function Contact() {
                   <span className="contact-info__icon">📍</span>
                   <div>
                     <strong>Location</strong>
-                    <span>Cool, CA — Auburn Lake Trails</span>
+                    <span>Cool, CA / Auburn Lake Trails</span>
                   </div>
                 </li>
                 <li>
@@ -226,7 +226,7 @@ export default function Contact() {
                 just an honest conversation about your situation.
               </p>
               <p className="contact-consult__note">
-                📅 Scheduling tool coming soon — in the meantime, email or call
+                📅 Scheduling tool coming soon. In the meantime, email or call
                 to set a time.
               </p>
             </div>
@@ -242,7 +242,7 @@ export default function Contact() {
                 <li>✓ Auburn</li>
                 <li>✓ Placerville</li>
                 <li>✓ El Dorado Hills</li>
-                <li>✓ Remote support — anywhere</li>
+                <li>✓ Remote support, anywhere</li>
               </ul>
             </div>
           </div>

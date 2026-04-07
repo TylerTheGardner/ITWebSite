@@ -7,10 +7,20 @@ import { useState, useEffect, useRef } from 'react'
 import './ChatbotWidget.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const MAX_RETRIES = 2
+const MAX_CHARS = 500 // aligned with widget UI limit
+
+// Persist session ID across page reloads
+function getStoredSessionId() {
+  try { return sessionStorage.getItem('gcit_chat_sid') } catch { return null }
+}
+function setStoredSessionId(sid) {
+  try { sessionStorage.setItem('gcit_chat_sid', sid) } catch {}
+}
 
 export default function ChatbotWidget() {
   const [open, setOpen] = useState(false)
-  const [sessionId, setSessionId] = useState(null)
+  const [sessionId, setSessionId] = useState(getStoredSessionId)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,7 +33,10 @@ export default function ChatbotWidget() {
     if (open && !sessionId) {
       fetch(`${API_BASE}/sessions`, { method: 'POST' })
         .then(r => r.json())
-        .then(data => setSessionId(data.sessionId))
+        .then(data => {
+          setSessionId(data.sessionId)
+          setStoredSessionId(data.sessionId)
+        })
         .catch(() => setError('Could not connect to chat server.'))
     }
   }, [open, sessionId])
@@ -38,11 +51,12 @@ export default function ChatbotWidget() {
     if (open) inputRef.current?.focus()
   }, [open])
 
-  const sendMessage = async (e) => {
+  const sendMessage = async (e, retryCount = 0) => {
     e?.preventDefault()
     if (!input.trim() || loading) return
 
     const userMsg = input.trim()
+    if (userMsg.length > MAX_CHARS) return // hard cap on UI side
     setInput('')
     setLoading(true)
     setError(null)
@@ -66,6 +80,11 @@ export default function ChatbotWidget() {
 
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', text: reply }])
     } catch (err) {
+      // Retry up to MAX_RETRIES times on network errors
+      if (retryCount < MAX_RETRIES && (err.name === 'TypeError' || err.message?.includes('fetch'))) {
+        await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)))
+        return sendMessage(e, retryCount + 1)
+      }
       setError('Failed to get a response. Please try again.')
       console.error(err)
     } finally {
@@ -145,7 +164,7 @@ export default function ChatbotWidget() {
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading}
-              maxLength={500}
+              maxLength={MAX_CHARS}
             />
             <button type="submit" disabled={!input.trim() || loading} aria-label="Send">
               ➤

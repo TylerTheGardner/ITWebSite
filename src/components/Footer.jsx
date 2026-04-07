@@ -50,7 +50,7 @@ export default function Footer() {
                 <a href="tel:+13036537381">(303) 653-7381</a>
               </li>
               <li className="footer__location">
-                📍 Cool, CA — Auburn Lake Trails
+                📍 Cool, CA / Auburn Lake Trails
               </li>
             </ul>
           </div>

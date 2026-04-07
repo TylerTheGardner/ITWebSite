@@ -84,6 +84,16 @@ const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX = 10; // max requests per window
 
+// Periodically purge stale entries to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS * 2);
+
 function checkRateLimit(key) {
   const now = Date.now();
   const entry = rateLimitMap.get(key);
@@ -115,8 +125,16 @@ app.post('/sessions', (req, res) => {
   res.json({ sessionId });
 });
 
-// Send a message to the agent
+// Send a message to the agent (with optional streaming via SSE)
 app.post('/chat', async (req, res) => {
+  const stream = req.headers.accept === 'text/event-stream';
+
+  if (stream) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+  }
   const { sessionId, message } = req.body;
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -134,8 +152,11 @@ app.post('/chat', async (req, res) => {
   const session = sessions.get(sid);
 
   try {
-    // Call OpenClaw gateway — create a new message in the session
-    const gatewayRes = await fetch(`${CFG.gatewayUrl}/v1/chat`, {
+    // Determine the correct gateway endpoint
+    // OpenClaw gateway uses /v1/chat/post for message sending
+    const gatewayUrl = `${CFG.gatewayUrl}/v1/chat/post`;
+
+    const fetchOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -146,12 +167,35 @@ app.post('/chat', async (req, res) => {
         sessionKey: `web:${sid}`,
         message,
       }),
-    });
+    };
+
+    // Apply timeout to prevent hanging indefinitely
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    fetchOptions.signal = controller.signal;
+
+    let gatewayRes;
+    try {
+      gatewayRes = await fetch(gatewayUrl, fetchOptions);
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!gatewayRes.ok) {
       const err = await gatewayRes.text();
       console.error('Gateway error:', gatewayRes.status, err);
       return res.status(502).json({ error: 'Agent unavailable' });
+    }
+
+    // Check if the gateway returned an error-structured body
+    const contentType = gatewayRes.headers.get('content-type') || '';
+
+    if (stream || contentType.includes('text/event-stream')) {
+      // Stream chunks directly to the client
+      res.flushHeaders();
+      gatewayRes.body.pipe(res);
+      session.messageCount += 1;
+      return;
     }
 
     const data = await gatewayRes.json();
@@ -162,13 +206,26 @@ app.post('/chat', async (req, res) => {
       reply: data.reply || data.message || data.content || JSON.stringify(data),
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      console.error('Chat error: gateway request timed out');
+      return res.status(504).json({ error: 'Request timed out. Please try again.' });
+    }
     console.error('Chat error:', err);
     res.status(500).json({ error: 'Failed to reach agent' });
   }
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────
-app.listen(CFG.port, () => {
+const server = app.listen(CFG.port, () => {
   console.log(`Gold Country IT Chat API running on port ${CFG.port}`);
   console.log(`Session TTL: ${CFG.sessionTTL / 1000 / 60} min`);
+});
+
+// Graceful shutdown — clean up intervals
+process.on('SIGINT', () => {
+  console.log('\nShutting down…');
+  server.close(() => process.exit(0));
+});
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0));
 });
