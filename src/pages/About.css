@@ -10,6 +10,7 @@
   content: '';
   position: absolute;
   inset: 0;
+  background-image: var(--hero-img, none);
   background-size: cover;
   background-position: center 40%;
   background-color: #1E4A1E;
@@ -195,8 +196,4 @@
   }
   .timeline-item__dot { display: none; }
   .timeline-item__year { text-align: left; }
-}
-
-.page-hero--about::before {
-  background-image: url('/ITWebSite/sierra3.jpg');
 }

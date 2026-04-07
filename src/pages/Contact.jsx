@@ -60,7 +60,7 @@ export default function Contact() {
 
   return (
     <>
-      <section className="page-hero page-hero--contact">
+      <section className="page-hero" style={{'--hero-img': "url('/ITWebSite/sierra4.jpg')"}}>
         <div className="container">
           <span className="section-label">Let's Talk</span>
           <h1>Get in Touch</h1>
