@@ -1,7 +1,36 @@
 .page-hero {
-  background: linear-gradient(135deg, #122012 0%, #1E4A1E 100%);
+  position: relative;
   padding: 4rem 0;
   color: var(--white);
+  border-top: 10px solid var(--gold);
+  border-bottom: 10px solid var(--green);
+  overflow: hidden;
+}
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/ITWebSite/sierra2.jpg');
+  background-size: cover;
+  background-position: center 35%;
+  background-color: #1E4A1E;
+  z-index: 0;
+}
+.page-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(15, 30, 12, 0.78) 0%,
+    rgba(15, 30, 12, 0.55) 60%,
+    rgba(15, 30, 12, 0.25) 100%
+  );
+  z-index: 1;
+}
+.page-hero .container {
+  position: relative;
+  z-index: 2;
 }
 .page-hero h1 { color: var(--white); }
 .page-hero .section-label {
