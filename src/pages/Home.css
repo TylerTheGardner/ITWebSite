@@ -6,21 +6,32 @@
   min-height: 520px;
   display: flex;
   align-items: center;
+  /* Gold border top and bottom */
+  border-top: 10px solid var(--gold);
+  border-bottom: 10px solid var(--green);
 }
 
 .hero__bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #122012 0%, #1E4A1E 55%, #2A6A2A 100%);
+  background-image: url('/ITWebSite/sierra.jpg');
+  background-size: cover;
+  background-position: center 40%;
   z-index: 0;
+  /* Fallback to green gradient if image hasn't loaded yet */
+  background-color: #1E4A1E;
 }
+/* Dark overlay so text stays readable over the photo */
 .hero__bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 80% 50%, rgba(201,151,28,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 60% at 20% 80%, rgba(201,151,28,0.10) 0%, transparent 60%);
+  background: linear-gradient(
+    to right,
+    rgba(15, 30, 12, 0.78) 0%,
+    rgba(15, 30, 12, 0.55) 60%,
+    rgba(15, 30, 12, 0.25) 100%
+  );
 }
 
 .hero__content {
