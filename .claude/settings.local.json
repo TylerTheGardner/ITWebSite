@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(cp -r /tmp/gold-country-it/* /c/Users/Tyler/Documents/GitHub/ITWebSite/)",
+      "Bash(cp /tmp/gold-country-it/.gitignore /c/Users/Tyler/Documents/GitHub/ITWebSite/)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Read(//c/Users/Tyler/.claude/projects/C--Users-Tyler-Documents-GitHub-ITWebSite/memory//**)",
+      "Read(//c/Users/Tyler/.claude/projects/C--Users-Tyler-Documents-GitHub-ITWebSite/memory/**)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)"
+    ]
+  }
+}
