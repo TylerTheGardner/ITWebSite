@@ -1,6 +1,6 @@
 /**
  * ChatbotWidget — Gold Country IT
- * Connects to the local API server which proxies to OpenClaw.
+ * Stateless: conversation history is kept in React state and sent with each request.
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -8,38 +8,17 @@ import './ChatbotWidget.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 const MAX_RETRIES = 2
-const MAX_CHARS = 500 // aligned with widget UI limit
-
-// Persist session ID across page reloads
-function getStoredSessionId() {
-  try { return sessionStorage.getItem('gcit_chat_sid') } catch { return null }
-}
-function setStoredSessionId(sid) {
-  try { sessionStorage.setItem('gcit_chat_sid', sid) } catch {}
-}
+const MAX_CHARS = 500
 
 export default function ChatbotWidget() {
-  const [open, setOpen] = useState(false)
-  const [sessionId, setSessionId] = useState(getStoredSessionId)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
+  const [open, setOpen]       = useState(false)
+  const [messages, setMessages] = useState([])  // display messages
+  const [history, setHistory]   = useState([])  // API history {role, content}
+  const [input, setInput]     = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError]     = useState(null)
   const bottomRef = useRef(null)
-  const inputRef = useRef(null)
-
-  // Create a session on first open
-  useEffect(() => {
-    if (open && !sessionId) {
-      fetch(`${API_BASE}/sessions`, { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-          setSessionId(data.sessionId)
-          setStoredSessionId(data.sessionId)
-        })
-        .catch(() => setError('Could not connect to chat server.'))
-    }
-  }, [open, sessionId])
+  const inputRef  = useRef(null)
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -56,31 +35,34 @@ export default function ChatbotWidget() {
     if (!input.trim() || loading) return
 
     const userMsg = input.trim()
-    if (userMsg.length > MAX_CHARS) return // hard cap on UI side
+    if (userMsg.length > MAX_CHARS) return
     setInput('')
     setLoading(true)
     setError(null)
 
-    // Append user message immediately
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userMsg }])
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, message: userMsg }),
+        body: JSON.stringify({ message: userMsg, history }),
       })
 
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
-      const data = await res.json()
+      const data  = await res.json()
       const reply = typeof data.reply === 'string'
         ? data.reply
         : JSON.stringify(data.reply || data)
 
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', text: reply }])
+      setHistory(prev => [
+        ...prev,
+        { role: 'user',      content: userMsg },
+        { role: 'assistant', content: reply   },
+      ])
     } catch (err) {
-      // Retry up to MAX_RETRIES times on network errors
       if (retryCount < MAX_RETRIES && (err.name === 'TypeError' || err.message?.includes('fetch'))) {
         await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)))
         return sendMessage(e, retryCount + 1)
