@@ -17,9 +17,7 @@ const services = [
       'Data backup & recovery',
     ],
     pricing: [
-      { label: 'Remote Session', price: '$50', note: 'per hour' },
-      { label: 'On-Site Visit', price: '$65', note: 'first hour, $50/hr after' },
-      { label: 'Monthly Support Plan', price: '$99', note: '/month, 2 hrs included' },
+      { label: 'IT Support & Troubleshooting', price: '$50', note: 'per hour' },
     ],
     tag: 'Most Popular',
   },
@@ -158,7 +156,7 @@ export default function Services() {
                         {svc.pricing.map(({ label, price, note }) => (
                           <div key={label} className="pricing-card">
                             <span className="pricing-card__label">{label}</span>
-                            <span className="pricing-card__price">TBD</span>
+                            <span className="pricing-card__price">{price}</span>
                             <span className="pricing-card__note">{note}</span>
                           </div>
                         ))}
