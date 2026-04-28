@@ -1,131 +1,147 @@
 /**
- * ChatbotWidget — Gold Country IT
- * Stateless: conversation history is kept in React state and sent with each request.
+ * ChatbotWidget — Gold Country IT website chat widget.
+ * Uses the local API bridge (/api) which proxies to the OpenClaw gateway.
+ * Each browser tab gets its own session stored in localStorage.
  */
 
 import { useState, useEffect, useRef } from 'react'
 import './ChatbotWidget.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-const MAX_RETRIES = 2
-const MAX_CHARS = 500
+const SESSION_KEY = 'gc_it_session_id'
+
+function getSessionId() {
+  return localStorage.getItem(SESSION_KEY)
+}
+function setSessionId(id) {
+  localStorage.setItem(SESSION_KEY, id)
+}
+
+async function createSession() {
+  const res = await fetch(`${API_BASE}/api/sessions`, { method: 'POST' })
+  const data = await res.json()
+  setSessionId(data.sessionId)
+  return data.sessionId
+}
+
+async function sendMessage(sessionId, message) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+  })
+  return res
+}
 
 export default function ChatbotWidget() {
-  const [open, setOpen]       = useState(false)
-  const [messages, setMessages] = useState([])  // display messages
-  const [history, setHistory]   = useState([])  // API history {role, content}
-  const [input, setInput]     = useState('')
+  const [open, setOpen] = useState(false)
+  const [sessionId, setSessionIdState] = useState(() => getSessionId())
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
+  const [error, setError] = useState(null)
   const bottomRef = useRef(null)
-  const inputRef  = useRef(null)
 
-  // Auto-scroll to bottom
+  // Auto-open session on first open
+  useEffect(() => {
+    if (open && !sessionId) {
+      createSession()
+        .then(id => setSessionIdState(id))
+        .catch(() => setError('Could not connect to chat server.'))
+    }
+  }, [open, sessionId])
+
+  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus input when panel opens
-  useEffect(() => {
-    if (open) inputRef.current?.focus()
-  }, [open])
+  async function handleSend(e) {
+    e.preventDefault()
+    if (!input.trim() || !sessionId || loading) return
 
-  const sendMessage = async (e, retryCount = 0) => {
-    e?.preventDefault()
-    if (!input.trim() || loading) return
-
-    const userMsg = input.trim()
-    if (userMsg.length > MAX_CHARS) return
+    const userMsg = { role: 'user', text: input.trim() }
+    setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
     setError(null)
 
-    setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userMsg }])
-
     try {
-      const res = await fetch(`${API_BASE}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, history }),
-      })
+      const res = await sendMessage(sessionId, userMsg.text)
 
-      if (!res.ok) throw new Error(`Server error: ${res.status}`)
-
-      const data  = await res.json()
-      const reply = typeof data.reply === 'string'
-        ? data.reply
-        : JSON.stringify(data.reply || data)
-
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', text: reply }])
-      setHistory(prev => [
-        ...prev,
-        { role: 'user',      content: userMsg },
-        { role: 'assistant', content: reply   },
-      ])
-    } catch (err) {
-      if (retryCount < MAX_RETRIES && (err.name === 'TypeError' || err.message?.includes('fetch'))) {
-        await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)))
-        return sendMessage(e, retryCount + 1)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Server error')
       }
-      setError('Failed to get a response. Please try again.')
-      console.error(err)
+
+      // Read SSE stream
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+
+      // Add assistant placeholder
+      setMessages(prev => [...prev, { role: 'assistant', text: '' }])
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        fullText += chunk
+        // Update last message with accumulated text
+        setMessages(prev => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: 'assistant', text: fullText }
+          return updated
+        })
+      }
+
+    } catch (err) {
+      setError(err.message || 'Failed to get a response. Please try again.')
+      // Remove failed user message and show error inline
+      setMessages(prev => prev.slice(0, -1))
     } finally {
       setLoading(false)
     }
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
+  function handleToggle() {
+    setOpen(o => !o)
+    setError(null)
   }
 
   return (
     <>
-      {/* Floating trigger button */}
-      <button
-        className="chatbot-trigger"
-        onClick={() => setOpen(o => !o)}
-        aria-label={open ? 'Close chat' : 'Chat with us'}
-        title={open ? 'Close chat' : 'Chat with us'}
-      >
+      <button className="chatbot-trigger" onClick={handleToggle} aria-label="Chat with us">
         {open ? '✕' : '💬'}
       </button>
 
-      {/* Chat panel */}
       {open && (
-        <div className="chatbot-panel" role="dialog" aria-label="Gold Country IT Assistant">
+        <div className="chatbot-panel" role="dialog" aria-label="Gold Country IT Chat">
           <div className="chatbot-panel__header">
             <span>💬 Gold Country IT Assistant</span>
-            <button onClick={() => setOpen(false)} aria-label="Close chat">✕</button>
+            <button onClick={handleToggle} aria-label="Close chat">✕</button>
           </div>
 
           <div className="chatbot-panel__messages">
-            {messages.length === 0 && !loading && (
+            {messages.length === 0 && (
               <div className="chatbot-welcome">
                 <p>👋 Hey there! I'm the Gold Country IT assistant.</p>
-                <p>Ask me anything about our services, pricing, or how we can help your business.</p>
-                <p className="chatbot-welcome__hint">Typical response time: a few seconds</p>
+                <p>I can help with questions about our services, pricing, or availability. What are you working on?</p>
               </div>
             )}
 
-            {messages.map((msg) => (
-              <div key={msg.id} className={`chatbot-msg chatbot-msg--${msg.role}`}>
-                <div className="chatbot-msg__bubble">
-                  {msg.text.split('\n').map((line, j) => (
-                    <span key={j}>{line}<br/></span>
-                  ))}
-                </div>
+            {messages.map((msg, i) => (
+              <div key={i} className={`chatbot-msg chatbot-msg--${msg.role}`}>
+                <div className="chatbot-msg__bubble">{msg.text || (msg.role === 'assistant' && loading ? '…' : '')}</div>
               </div>
             ))}
 
-            {loading && (
+            {loading && messages[messages.length - 1]?.role !== 'assistant' && (
               <div className="chatbot-msg chatbot-msg--assistant">
                 <div className="chatbot-msg__bubble chatbot-msg__bubble--typing">
-                  <span className="typing-dot" />
-                  <span className="typing-dot" />
-                  <span className="typing-dot" />
+                  <span className="chatbot-typing-dot" />
+                  <span className="chatbot-typing-dot" />
+                  <span className="chatbot-typing-dot" />
                 </div>
               </div>
             )}
@@ -137,19 +153,22 @@ export default function ChatbotWidget() {
             <div ref={bottomRef} />
           </div>
 
-          <form className="chatbot-panel__input" onSubmit={sendMessage}>
+          <form className="chatbot-panel__form" onSubmit={handleSend}>
             <input
-              ref={inputRef}
               type="text"
+              className="chatbot-panel__input"
               placeholder="Ask me anything…"
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
               disabled={loading}
-              maxLength={MAX_CHARS}
             />
-            <button type="submit" disabled={!input.trim() || loading} aria-label="Send">
-              ➤
+            <button
+              type="submit"
+              className="chatbot-panel__send"
+              disabled={!input.trim() || loading}
+              aria-label="Send"
+            >
+              ⏎
             </button>
           </form>
         </div>

@@ -67,7 +67,7 @@ export default function Home() {
             Cool, CA
           </span>
           <h1 className="hero__title">
-            Tech help from<br />
+            Tech help from
             <span className="hero__title-accent">your neighbor.</span>
           </h1>
           <p className="hero__sub">
@@ -107,7 +107,7 @@ export default function Home() {
       </section>
 
       {/* Why local */}
-      <section className="section section-alt">
+      <section className="section local-reasons-section">
         <div className="container">
           <div className="section-header center">
             <span className="section-label">Why Gold Country IT</span>

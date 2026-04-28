@@ -1,134 +1,172 @@
-# Gold Country IT — Chatbot Setup Guide
+# Gold Country IT Chat Setup
 
 ## What Was Built
 
-- **Narrow agent** — `gold-country-it-chat` pre-sales agent with a warm, sunny personality. Answers questions about services, pricing, and availability. Stays in scope.
-- **API server** — Express.js proxy that handles multi-user sessions and forwards messages to the OpenClaw gateway.
-- **React chat widget** — Floating chat button (bottom-right) on the Contact page. Streams responses from the agent.
-
----
-
-## Architecture
-
-```
-Browser (Contact page)
-    ↓  POST /chat { message, sessionId }
-    ↓
-API Server (src/api/server.js) — handles sessions
-    ↓  HTTP POST to gateway
-    ↓
-OpenClaw Gateway (127.0.0.1:18789)
-    ↓
-Narrow Agent (gold-country-it-chat)
-```
-
----
-
-## Setup
-
-### 1. Register the narrow agent with OpenClaw
-
-Copy the agent config into your OpenClaw agents directory:
-
-```
-openclaw agents add C:\Users\Tyler\.openclaw\agents\gold-country-it-chat.json
-```
-
-Or manually add it via the OpenClaw control UI.
-
-### 2. Install and start the API server
-
-```bash
-cd src/api
-npm install
-
-# Start the server (runs on port 3001 by default)
-node server.js
-
-# Or for development with auto-reload:
-npm run dev
-```
-
-### 3. Expose the gateway for external access
-
-The API server calls `127.0.0.1:18789` — if you want the website to work from outside your local network, you need to expose the gateway.
-
-**Option A — Cloudflare Tunnel (recommended, free):**
-```bash
-cloudflared tunnel --url http://127.0.0.1:18789
-# Copy the *.trycloudflare.com URL → set as OPENCLAW_GATEWAY_URL in src/api/.env
-```
-
-**Option B — Tailscale (you already have this set up):**
-Your gateway is already configured with Tailscale in serve mode. The Tailscale URL would be:
-`http://100.82.x.x:18789` (your Tailscale IP)
-
-**Option C — ngrok:**
-```bash
-ngrok http 18789
-# Copy the https://*.ngrok.io URL → set as OPENCLAW_GATEWAY_URL in src/api/.env
-```
-
-### 4. Update the API URL for production
-
-When deploying the API server publicly, update `VITE_API_URL` in `.env` to point to your live API server URL.
-
----
-
-## Running Locally
-
-```bash
-# Terminal 1 — API server
-cd src/api
-node server.js
-
-# Terminal 2 — React dev server
-npm run dev
-```
-
-Then open `http://localhost:5173/contact` and try the chat.
-
----
-
-## Key Files
+### Files created
 
 | File | Purpose |
 |------|---------|
-| `src/components/ChatbotWidget.jsx` | React chat widget (already in Contact page) |
+| `src/agents/gold-country-it-chat.json` | Narrow pre-sales agent config |
+| `src/api/server.js` | Express API bridge (session + streaming) |
+| `src/components/ChatbotWidget.jsx` | React chat widget |
 | `src/components/ChatbotWidget.css` | Widget styles |
-| `src/api/server.js` | Express proxy + session manager |
-| `src/api/package.json` | API server dependencies |
-| `src/api/.env` | API config (gateway URL, token, agent ID) |
-| `.env` | Vite env — `VITE_API_URL` for the React widget |
-| `C:\Users\Tyler\.openclaw\agents\gold-country-it-chat.json` | Narrow agent definition |
 
 ---
 
-## Exposing the API Server
+## 1. Register the Agent with OpenClaw
 
-For the website to reach the API from a deployed domain:
+The gateway needs to know about the `gold-country-it-chat` agent. Run this from the ITWebSite directory:
 
-1. Deploy `src/api/server.js` to a hosting platform (Railway, Render, Fly.io, or a $5 VPS)
-2. Set the environment variables (`OPENCLAW_GATEWAY_URL`, `OPENCLAW_API_TOKEN`, `AGENT_ID`) in your host's dashboard
-3. Update `VITE_API_URL` in the React app's deployed `.env` to point to your API URL
-4. Rebuild and redeploy the React site
+```bash
+cd C:\Users\Tyler\Documents\GitHub\ITWebSite
+openclaw agents add src/agents/gold-country-it-chat.json
+```
 
----
-
-## Multi-User Sessions
-
-- Each browser tab gets a unique `sessionId` (UUID), stored in React state
-- Sessions expire after 30 minutes of inactivity (configurable via `SESSION_TTL_MS`)
-- Sessions are stored in-memory on the API server (no database needed for low traffic)
-- For production/high traffic, replace the in-memory `Map` with Redis
+Or, from any directory:
+```bash
+openclaw agents add "C:\Users\Tyler\Documents\GitHub\ITWebSite\src\agents\gold-country-it-chat.json"
+```
 
 ---
 
-## Customizing the Agent
+## 2. Start the API Server
 
-Edit `C:\Users\Tyler\.openclaw\agents\gold-country-it-chat.json` to change:
-- System prompt (tone, scope, services)
-- Model selection
-- Response behavior
+The API bridge proxies website chat requests to the local OpenClaw gateway and manages visitor sessions.
 
-Restart the gateway after editing the agent config.
+```bash
+# Install express (first time only)
+npm install express
+
+# Start the server
+node src/api/server.js
+```
+
+**Environment variables** (optional, defaults work for local dev):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | API server port |
+| `GATEWAY_URL` | `http://127.0.0.1:18789` | OpenClaw gateway URL |
+| `GATEWAY_TOKEN` | `400cdf5e…` | Auth token (from openclaw.json) |
+| `AGENT_ID` | `gold-country-it-chat` | OpenClaw agent ID |
+
+**For production**, set `VITE_API_URL` in your React build to your deployed API server URL. In development, the widget defaults to `http://localhost:3001`.
+
+---
+
+## 3. Configure Gateway for External Access
+
+The gateway runs at `127.0.0.1:18789` (loopback only). To receive traffic from your website, you need to expose it.
+
+### Option A — Tailscale (recommended)
+
+Tailscale is already configured in your gateway config (`"tailscale": { "mode": "serve" }`).
+
+1. Install and authenticate Tailscale on the gateway machine if not already done.
+2. Run: `openclaw gateway restart`
+3. Get your Tailscale hostname: `tailscale status`
+4. Set `GATEWAY_URL=https://your-tailscale-hostname:18789` in the API server environment.
+5. Set `VITE_API_URL=https://your-api-server-hostname:3001` in the React app.
+
+### Option B — ngrok (quick dev/testing)
+
+```bash
+ngrok http 18789 --domain=your-domain.ngrok-free.app
+# or just
+ngrok http 18789
+```
+
+Use the ngrok HTTPS URL as `GATEWAY_URL`.
+
+### Option C — Cloudflare Tunnel
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:18789
+```
+
+---
+
+## 4. Add the Widget to Your Site
+
+The widget is already integrated in `Contact.jsx` via `<ChatbotWidget />`. To add it **site-wide** (appears on every page), add it to `App.jsx`:
+
+```jsx
+// src/App.jsx
+import ChatbotWidget from './components/ChatbotWidget'
+
+// In the JSX, anywhere inside the fragment (before </>):
+<ChatbotWidget />
+```
+
+To limit it to just the Contact page, it already is there. ✓
+
+---
+
+## 5. Local Testing Checklist
+
+```bash
+# 1. Start OpenClaw gateway (should already be running)
+openclaw gateway status
+
+# 2. Start the API server
+node src/api/server.js
+# Output: Gold Country IT API server running on http://localhost:3001
+
+# 3. Start the React dev server
+npm run dev
+
+# 4. Visit http://localhost:5173 (or your Vite port)
+#    Click 💬 in the bottom-right corner
+#    You should see the welcome message
+#    Type a message and get a streaming response
+```
+
+### Test the API directly:
+
+```bash
+# Create a session
+curl -X POST http://localhost:3001/api/sessions
+# Returns: { "sessionId": "abc-123" }
+
+# Send a chat message
+curl -X POST http://localhost:3001/api/sessions/abc-123/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"What services do you offer?\"}"
+```
+
+---
+
+## React Widget Props / Configuration
+
+The widget reads from these environment variables (Vite):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_API_URL` | `http://localhost:3001` | API bridge base URL |
+
+Set in a `.env.local` file:
+```
+VITE_API_URL=http://localhost:3001
+```
+
+For production (GitHub Pages + deployed API):
+```
+VITE_API_URL=https://your-api-server.com
+```
+
+---
+
+## Session Model
+
+- Each browser **tab** gets its own `sessionId` stored in `localStorage`
+- Sessions expire **30 minutes** after last activity (server-side cleanup)
+- Each visitor session is **independent** — no cross-contamination of context
+- The API server maintains a map: `visitorSessionId → openclawSessionId`
+
+---
+
+## Production Deployment Notes
+
+- The React widget makes direct API calls to `/api` — those must be proxied through a CDN or the API server must be publicly accessible.
+- The API server holds session state in memory — for multiple API server instances, move session storage to Redis or a database.
+- The `GATEWAY_TOKEN` should be stored as a secret, not hardcoded — use environment variables in production.

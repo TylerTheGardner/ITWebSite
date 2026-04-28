@@ -1,83 +1,155 @@
-require('dotenv').config();
-
 /**
- * Gold Country IT — Chat API Server (local dev)
+ * src/api/server.js
+ * Express API bridge — proxies website chat requests to the OpenClaw gateway.
  *
- * Mirrors the stateless Vercel function at api/chat.js so local dev
- * works without deploying. Exposes POST /api/chat.
- *
- * Environment variables (src/api/.env):
- *   OPENCLAW_GATEWAY_URL  — Gateway base URL (default: http://127.0.0.1:18789)
- *   OPENCLAW_API_TOKEN    — Gateway auth token
- *   AGENT_ID              — Agent ID (default: gold-country-it-chat)
- *   PORT                  — Server port (default: 3001)
+ * Environment variables:
+ *   PORT          — API server port (default 3001)
+ *   GATEWAY_URL   — OpenClaw gateway URL (default http://127.0.0.1:18789)
+ *   GATEWAY_TOKEN — OpenClaw auth token (from openclaw.json)
+ *   AGENT_ID      — OpenClaw agent ID to use (default gold-country-it-chat)
  */
 
-const express = require('express');
-const cors    = require('cors');
+import express from 'express'
+import crypto from 'crypto'
 
-const app = express();
-app.use(express.json());
-app.use(cors({ origin: true }));
+const app = express()
+app.use(express.json())
 
-const CFG = {
-  gatewayUrl: process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789',
-  apiToken:   process.env.OPENCLAW_API_TOKEN   || '',
-  agentId:    process.env.AGENT_ID             || 'gold-country-it-chat',
-  port:       parseInt(process.env.PORT        || '3001', 10),
-};
+const PORT = process.env.PORT || 3001
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://127.0.0.1:18789'
+const GATEWAY_TOKEN = process.env.GATEWAY_TOKEN || '400cdf5eee1ab60c79563908d78df0534ad8bea10a0d4db6'
+const AGENT_ID = process.env.AGENT_ID || 'gold-country-it-chat'
 
-app.get('/health', (_req, res) => res.json({ status: 'ok', agent: CFG.agentId }));
+// ─── Session Store (in-memory, expires after 30 min inactivity) ───────────────
+const sessions = new Map()
 
-app.post('/api/chat', async (req, res) => {
-  const { message, history = [] } = req.body || {};
+function createSessionId() {
+  return crypto.randomUUID()
+}
+
+function getOrCreateSession(sessionId) {
+  if (!sessionId || !sessions.has(sessionId)) {
+    const newId = createSessionId()
+    sessions.set(newId, {
+      id: newId,
+      openclawSessionId: null,
+      createdAt: Date.now(),
+      lastActiveAt: Date.now(),
+    })
+    return sessions.get(newId)
+  }
+  const session = sessions.get(sessionId)
+  session.lastActiveAt = Date.now()
+  return session
+}
+
+// ─── Session cleanup (30-min timeout) ────────────────────────────────────────
+const SESSION_TTL_MS = 30 * 60 * 1000
+setInterval(() => {
+  const now = Date.now()
+  for (const [id, session] of sessions.entries()) {
+    if (now - session.lastActiveAt > SESSION_TTL_MS) {
+      sessions.delete(id)
+    }
+  }
+}, 60_000)
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+
+/** POST /api/sessions — create a new visitor session */
+app.post('/api/sessions', (req, res) => {
+  const session = getOrCreateSession()
+  res.json({ sessionId: session.id })
+})
+
+/** GET /api/sessions/:sessionId — look up a session */
+app.get('/api/sessions/:sessionId', (req, res) => {
+  const session = sessions.get(req.params.sessionId)
+  if (!session) return res.status(404).json({ error: 'Session not found or expired' })
+  session.lastActiveAt = Date.now()
+  res.json({ sessionId: session.id })
+})
+
+/** POST /api/sessions/:sessionId/chat — send a message and stream response */
+app.post('/api/sessions/:sessionId/chat', async (req, res) => {
+  const { message } = req.body
+  const sessionId = req.params.sessionId
 
   if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'message is required' });
-  }
-  if (message.length > 2000) {
-    return res.status(400).json({ error: 'Message too long (max 2000 characters)' });
-  }
-  if (!Array.isArray(history)) {
-    return res.status(400).json({ error: 'history must be an array' });
+    return res.status(400).json({ error: '`message` is required (string)' })
   }
 
-  const cleanHistory = history
-    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-    .slice(-20);
-
-  const messages = [...cleanHistory, { role: 'user', content: message }];
+  const session = sessions.get(sessionId)
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found or expired' })
+  }
+  session.lastActiveAt = Date.now()
 
   try {
-    const gatewayRes = await fetch(`${CFG.gatewayUrl}/v1/chat/completions`, {
-      method: 'POST',
+    let endpoint, method, body
+
+    if (session.openclawSessionId) {
+      endpoint = `${GATEWAY_URL}/v1/sessions/${session.openclawSessionId}/messages`
+      method = 'POST'
+      body = { message }
+    } else {
+      const createRes = await fetch(`${GATEWAY_URL}/v1/sessions?agentId=${AGENT_ID}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GATEWAY_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agentId: AGENT_ID }),
+      })
+
+      if (!createRes.ok) {
+        const errText = await createRes.text()
+        console.error('[gateway] session create failed:', createRes.status, errText)
+        return res.status(502).json({ error: 'Failed to create gateway session', detail: errText })
+      }
+
+      const createData = await createRes.json()
+      session.openclawSessionId = createData.sessionId || createData.id
+      sessions.set(sessionId, session)
+
+      endpoint = `${GATEWAY_URL}/v1/sessions/${session.openclawSessionId}/messages`
+      method = 'POST'
+      body = { message }
+    }
+
+    const gatewayRes = await fetch(endpoint, {
+      method,
       headers: {
+        'Authorization': `Bearer ${GATEWAY_TOKEN}`,
         'Content-Type': 'application/json',
-        ...(CFG.apiToken && { Authorization: `Bearer ${CFG.apiToken}` }),
       },
-      body: JSON.stringify({ model: `openclaw/${CFG.agentId}`, messages, max_tokens: 1024 }),
-      signal: AbortSignal.timeout(60_000),
-    });
+      body: JSON.stringify(body),
+    })
 
     if (!gatewayRes.ok) {
-      const text = await gatewayRes.text().catch(() => '');
-      throw new Error(`Gateway ${gatewayRes.status}: ${text.slice(0, 200)}`);
+      const errText = await gatewayRes.text()
+      console.error('[gateway] message send failed:', gatewayRes.status, errText)
+      return res.status(502).json({ error: 'Failed to send message to gateway', detail: errText })
     }
 
-    const data  = await gatewayRes.json();
-    const reply = data.choices?.[0]?.message?.content || '';
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
 
-    res.json({ reply });
+    gatewayRes.body.pipeTo(new WritableStream({
+      write(chunk) { res.write(chunk) },
+      close() { res.end() },
+      abort(err) { console.error('[gateway] stream error:', err); res.end() },
+    }))
+
   } catch (err) {
-    console.error('Chat error:', err.message);
-    if (err.name === 'TimeoutError' || err.message?.includes('timeout')) {
-      return res.status(504).json({ error: 'Request timed out. Please try again.' });
-    }
-    res.status(502).json({ error: 'Failed to reach agent', detail: err.message });
+    console.error('[api] Unexpected error:', err)
+    res.status(500).json({ error: 'Internal server error' })
   }
-});
+})
 
-app.listen(CFG.port, () => {
-  console.log(`Gold Country IT Chat API (local) → http://localhost:${CFG.port}`);
-  console.log(`Gateway: ${CFG.gatewayUrl} | Agent: ${CFG.agentId}`);
-});
+app.listen(PORT, () => {
+  console.log(`Gold Country IT API server running on http://localhost:${PORT}`)
+  console.log(`  → Gateway:  ${GATEWAY_URL}`)
+  console.log(`  → Agent ID: ${AGENT_ID}`)
+})
